@@ -1,0 +1,5 @@
+zone "assign.alghafri.300.ops" {
+    type secondary;
+    primaries { 192.168.128.201; };
+    file "/var/cache/bind/db.assign.alghafri.300.ops";
+};
