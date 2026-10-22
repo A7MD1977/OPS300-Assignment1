@@ -1,5 +1,8 @@
+include "/etc/bind/keys/assign-xfer.key";
+
 zone "assign.alghafri.300.ops" {
     type secondary;
-    primaries { 192.168.128.201; };
+    primaries { 192.168.128.201 key assign-xfer; };
     file "/var/cache/bind/db.assign.alghafri.300.ops";
+    allow-query { any; };
 };
