@@ -21,9 +21,12 @@ pipeline {
             }
         }
 
-        stage('Check Podman') {
+        stage('Check Podman and Trivy') {
             steps {
-                sh 'podman --version'
+                sh '''
+                    podman --version
+                    trivy --version
+                '''
             }
         }
 
@@ -34,6 +37,26 @@ pipeline {
                       -t ${REGISTRY}/${IMAGE}:${BUILD_NUMBER} \
                       -f Dockerfile .
                 '''
+            }
+        }
+
+        stage('Trivy CVE Security Scan - BONUS') {
+            steps {
+                sh '''
+                    trivy image \
+                      --image-src podman \
+                      --severity HIGH,CRITICAL \
+                      --exit-code 0 \
+                      --format table \
+                      --output trivy-report.txt \
+                      "${REGISTRY}/${IMAGE}:${BUILD_NUMBER}"
+                '''
+            }
+            post {
+                always {
+                    archiveArtifacts artifacts: 'trivy-report.txt',
+                                     allowEmptyArchive: true
+                }
             }
         }
 
@@ -64,4 +87,3 @@ pipeline {
         }
     }
 }
-
