@@ -34,7 +34,7 @@ pipeline {
             steps {
                 sh '''
                     podman build \
-                      -t ${REGISTRY}/${IMAGE}:${BUILD_NUMBER} \
+                      -t "${REGISTRY}/${IMAGE}:${BUILD_NUMBER}" \
                       -f Dockerfile .
                 '''
             }
@@ -43,7 +43,7 @@ pipeline {
         stage('Trivy CVE Security Scan - BONUS') {
             steps {
                 sh '''
-                    trivy image \
+                    trivy --config "" image \
                       --image-src podman \
                       --severity HIGH,CRITICAL \
                       --exit-code 0 \
@@ -52,10 +52,13 @@ pipeline {
                       "${REGISTRY}/${IMAGE}:${BUILD_NUMBER}"
                 '''
             }
+
             post {
                 always {
-                    archiveArtifacts artifacts: 'trivy-report.txt',
-                                     allowEmptyArchive: true
+                    archiveArtifacts(
+                        artifacts: 'trivy-report.txt',
+                        allowEmptyArchive: true
+                    )
                 }
             }
         }
@@ -71,6 +74,7 @@ pipeline {
                 ]) {
                     sh '''
                         set +x
+
                         echo "$REG_PASS" | podman login \
                           --tls-verify=false \
                           -u "$REG_USER" \
